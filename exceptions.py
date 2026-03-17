@@ -28,6 +28,6 @@ class InvalidInputError(ConverterError):
     pass
 
 
-class WriteError(ConverterError):
+class WriteFileError(ConverterError):
     """Raised when writing output file fails."""
     pass
