@@ -20,7 +20,7 @@ from constants import JSON_INDENT, JSON_ENSURE_ASCII
 logger = logging.getLogger(__name__)
 
 
-def convert_sheet_data_to_json(sheet_data_list: List[SheetData]) -> str:
+def convert_to_json(sheet_data_list: List[SheetData]) -> str:
     """
     Convert SheetData objects to formatted JSON string.
     
