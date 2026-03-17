@@ -1,1 +1,1 @@
-openpyxl>=3.10.0  # For reading XLSX files
+openpyxl>=3.0.0  # For reading XLSX files
