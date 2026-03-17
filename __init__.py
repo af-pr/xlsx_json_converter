@@ -32,7 +32,8 @@ from exceptions import (
     FileNotFoundError,
     InvalidFormatError,
     InvalidInputError,
-    WriteError,
+    ReadFileError,
+    WriteFileError,
 )
 import json_validator
 
@@ -46,6 +47,7 @@ __all__ = [
     "FileNotFoundError",
     "InvalidFormatError",
     "InvalidInputError",
-    "WriteError",
+    "ReadFileError",
+    "WriteFileError",
     "json_validator",
 ]

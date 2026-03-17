@@ -18,11 +18,8 @@ def read_file(path_input: str = "") -> bytes:
     """
     Read XLSX file and return raw binary content.
     
-    Resolves input to actual file path via _validate_input_as_path(), then reads the file
-    in binary mode and returns its content.
-    
     Args:
-        path_input: Filename, full path, or empty string (uses default: sources/source.xlsx)
+        path_input: Full path, filename in default directory, or empty string (uses default: sources/source.xlsx)
         
     Returns:
         Binary file content as bytes
