@@ -4,9 +4,7 @@ XLSX parsing module for converting binary data to structured data.
 
 from typing import List
 from io import BytesIO
-from wsgiref import headers
-from openpyxl import load_workbook, Worksheet
-
+from openpyxl import load_workbook
 from openpyxl.worksheet import Worksheet
 
 from models import SheetData, Cell
@@ -36,30 +34,31 @@ def parse(file_bytes: bytes) -> List[SheetData]:
     Raises:
         InvalidFormatError: If file is corrupted or not valid XLSX
     """
-    workbook = load_workbook(BytesIO(file_bytes))
+    try:
+        workbook = load_workbook(BytesIO(file_bytes), data_only=False)
+    except Exception as e:
+        raise InvalidFormatError(f"Cannot parse XLSX file: {str(e)}")
     
+    sheet_data_list = []
     for sheet in workbook.worksheets:
         headers = _extract_headers(sheet)
-        # Extract headers (first row) or auto-generate if missing
-        # Extract rows and cells, preserving original data types
-        # Create SheetData objects for each sheet
-        pass
+        rows = _extract_data(sheet, len(headers))
+        sheet_data_list.append(SheetData(name=sheet.title, headers=headers, rows=rows))
     
-    #- Parses XLSX files using openpyxl
-    #- If header not present (or any header cell is empty), auto-generated as Column_1, Column_2, ...
-    pass
+    return sheet_data_list
 
-def _extract_headers(sheet : Worksheet) -> List[str]:
+def _extract_headers(worksheet : Worksheet) -> List[str]:
     """
-    Extract first row of the sheet as headers
-    - If any header cell is empty, auto-generate as Column_N
+    Extract first row of the sheet as column headers
+    If any header cell is empty, auto-generate as Column_N
+    where n is the 1-based column index (e.g., Column_1, Column_2, etc.)
     
     Args:
         sheet: openpyxl worksheet object
     Returns:
         List of header names
     """
-    first_row = sheet[0]  # This is the first row (headers)
+    first_row = worksheet[1]  # This is the first row (headers), openpyxl starts indexing at 1
     headers = []
     for cell in first_row:
         if cell.value:
@@ -68,35 +67,29 @@ def _extract_headers(sheet : Worksheet) -> List[str]:
             headers.append(f"Column_{cell.column}")
     return headers
 
-def _extract_data(ws, num_columns: int) -> List[List[Cell]]:
+def _extract_data(worksheet: Worksheet, num_columns: int) -> List[List[Cell]]:
     """
     Extract data rows (from row 2 onwards)
     
     Args:
-        ws: openpyxl worksheet object
+        worksheet: openpyxl worksheet object
         num_columns: Number of columns based on headers (to handle missing cells)   
     Returns:
         List of rows, where each row is a List[Cell]
     """
     rows = []
     
-    # If worksheet only has header row or is empty, return empty rows
-    if ws.max_row < 2:
-        return rows
-    
-    # Iterate from row 2 onwards
-    for row_idx in range(2, ws.max_row + 1):
-        row = ws[row_idx]  # Direct indexing to get row
+    # Iterate from row 2 onwards. If the sheet has fewer columns than 2, the loop won't be executed (empty content case)
+    for row_idx in range(2, worksheet.max_row + 1):
+        row = worksheet[row_idx]
         cell_list = []
         
-        # Convert each cell to our Cell dataclass
         for cell in row:
-            cell_list.append(Cell(
-                data_type=cell.data_type,
-                value=cell.value
-            ))
+            cell_list.append(
+                Cell(data_type=cell.data_type, value=cell.value)
+            )
         
-        # Pad row with empty cells if it's shorter than num_columns
+        # If current row has fewer cells than num_columns, add empty cells to maintain structure
         if len(cell_list) < num_columns:
             padding_needed = num_columns - len(cell_list)
             cell_list.extend([Cell(None, None) for _ in range(padding_needed)])
