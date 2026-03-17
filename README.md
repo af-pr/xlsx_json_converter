@@ -68,6 +68,17 @@ xlsx_json_converter/
 └── __init__.py              # Package initialization
 ```
 
+## Input Format Requirements
+
+The XLSX file must follow this structure:
+
+- **First row is ALWAYS treated as column headers**
+  - If a header cell is empty, it will be auto-generated as `Column_1`, `Column_2`, etc.
+  - If the entire first row is empty, all headers will be auto-generated
+  - WARNING! If the first row is data it will still be processed as headers
+- **Rows 2 onwards**: Actual data
+```
+
 ## Output Format
 
 The generated JSON preserves cell type information:

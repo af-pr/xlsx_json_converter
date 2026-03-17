@@ -7,8 +7,13 @@ Features:
 - Preserves cell type information from source XLSX
 - Detects and reports type inconsistencies per column
 - Supports multiple sheets
-- Auto-generates headers if source doesn't have them
+- Treats first row as headers (auto-generates Column_N for empty cells)
 - Avoids filename collisions automatically
+
+Input Format:
+- First row ALWAYS treated as column headers
+- Empty header cells auto-generate as Column_1, Column_2, etc.
+- Data rows start from row 2 onwards
 
 Can be used as a CLI tool or imported as a library:
 
