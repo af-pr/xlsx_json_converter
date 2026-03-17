@@ -13,6 +13,11 @@ class FileNotFoundError(ConverterError):
     pass
 
 
+class ReadFileError(ConverterError):
+    """Raised when reading input file fails."""
+    pass
+
+
 class InvalidFormatError(ConverterError):
     """Raised when file format is invalid or corrupted."""
     pass
