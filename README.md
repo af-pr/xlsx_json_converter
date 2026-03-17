@@ -99,32 +99,6 @@ Cell data types:
 - `'e'` - Error
 - `None` - Empty cell
 
-## TODO
-
-- [ ] Add command-line argument parsing (argparse) instead of interactive prompts
-- [ ] Add configuration file support (JSON/YAML)
-- [ ] Add logging support for debugging
-- [ ] Add unit tests (pytest)
-- [ ] Support for Excel formulas evaluation
-- [ ] Add progress tracking for large files
-- [ ] Add type hints validation (MyPy)
-- [ ] Create API documentation (Sphinx)
-- [ ] Support for password-protected XLSX files
-- [ ] Add data export to other formats (CSV)
-
-## Development
-
-### Code Style
-
-This project follows PEP 8 and PEP 257 guidelines.
-
-```bash
-# TODO: Setup linting
-black . 
-flake8
-mypy .
-```
-
 ## License
 
 [MIT](LICENSE)
