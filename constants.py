@@ -4,10 +4,13 @@ Constants and default configuration for the XLSX to JSON converter.
 
 from pathlib import Path
 
+# Project root directory
+PROJECT_ROOT = Path(__file__).parent
+
 # Path configuration
-DEFAULT_SOURCE_DIR = Path("sources")
+DEFAULT_SOURCE_DIR = PROJECT_ROOT / "sources"
 DEFAULT_SOURCE_FILENAME = "source.xlsx"
-DEFAULT_OUTPUT_DIR = Path("output")
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "output"
 DEFAULT_OUTPUT_FILENAME_START = "output"
 
 # File extensions
