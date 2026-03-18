@@ -35,7 +35,7 @@ def prompt_user() -> tuple[str, str]:
     print(f"All output files will be created in the {DEFAULT_OUTPUT_DIR} directory")
     
     # Get input filename
-    input_prompt = f"Enter source filename]: "
+    input_prompt = f"Enter source filename: "
     input_file = input(input_prompt).strip()
     input_file = input_file
     
@@ -53,23 +53,41 @@ def display_results(output_path: Path) -> None:
     Args:
         output_path: Path to the created JSON file
     """
-    print("\n" + "=" * 30)
+    print("\n" + "=" * 26)
     print("✅ Conversion successful!")
-    print("=" * 30)
+    print("=" * 26)
     print(f"\nOutput file created:")
     print(f"  {output_path}")
     print()
 
 
-def display_validation_warnings(validation_results) -> None:
+def display_validation_results(validation_results) -> None:
     """
-    Display type consistency validation warnings.
+    Display validation results. If there are any invalid columns, show which columns have type inconsistencies and what the distribution of types is. If all columns are valid, show a message that all columns have consistent types.
     
     Args:
-        validation_results: List of ColumnValidationResult objects with type inconsistencies
+        validation_results: List of ColumnValidationResult objects
     """
-    #TODO: Implement this function when validation is returned
-    pass
+    invalid_columns = [r for r in validation_results if not r.validated]
+
+    print("\n" + "=" * 50)
+    print(f"Validation Results:")
+    print("_" * 18)
+    if not invalid_columns:
+        print("\n✅ All columns have consistent types")
+        print("\n" + "=" * 50)
+    else:
+        print(f"\n⚠️  Type inconsistencies found in {len(invalid_columns)} column(s):\n")
+        for result in invalid_columns:
+            print(f"  -- Column '{result.column_header}' (index {result.column_index}):")
+            for data_type, row_indices in result.type_distribution.items():
+                rows_preview = row_indices[:5]
+                rows_str = ", ".join(str(i) for i in rows_preview)
+                if len(row_indices) > 5:
+                    rows_str += f", ... (+{len(row_indices) - 5} more)"
+                print(f"    - '{data_type}': rows [{rows_str}]")
+            print()
+        print("\n" + "=" * 50)
 
 
 def main() -> None:
@@ -90,11 +108,10 @@ def main() -> None:
         input_file, output_file = prompt_user()
         
         converter = Converter()
-        output_path = converter.convert(input_file, output_file)
+        output_path, validation_results = converter.convert(input_file, output_file)
         
         display_results(output_path)
-        if converter.validation_results:
-            display_validation_warnings(converter.validation_results)
+        display_validation_results(validation_results)
     
     except KeyboardInterrupt:
         print("\n\n⚠️  Conversion interrupted by user")

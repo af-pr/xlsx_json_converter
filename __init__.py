@@ -40,7 +40,7 @@ from exceptions import (
     ReadFileError,
     WriteFileError,
 )
-import json_validator
+import xlsx_json_converter.data_validator as data_validator
 
 __version__ = "1.0.0"
 __author__ = "Your Name"
@@ -54,5 +54,5 @@ __all__ = [
     "InvalidInputError",
     "ReadFileError",
     "WriteFileError",
-    "json_validator",
+    "data_validator",
 ]

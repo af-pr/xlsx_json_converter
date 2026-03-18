@@ -16,6 +16,7 @@ import file_reader
 import xlsx_parser
 import json_converter
 import file_writer
+import data_validator
 from exceptions import ConverterError, InvalidFormatError, ReadFileError, WriteFileError, InvalidInputError
 
 class Converter:
@@ -25,7 +26,6 @@ class Converter:
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.validation_results = None
     
     def convert(
         self,
@@ -61,14 +61,14 @@ class Converter:
             parsed_data = xlsx_parser.parse(xlsx_content)
             self.logger.info(f"Parsed {len(parsed_data)} sheets")
             
-            # TODO: Validate the data to check column type integrity and add it to return
-            
             json_data = json_converter.convert_to_json(parsed_data)
             self.logger.info("Converted data to JSON format ")
             output_path = file_writer.write(json_data, output_filename)
             self.logger.info(f"Written JSON data to: {output_path}")
             
-            return output_path
+            validation = data_validator.validate_sheet_data(parsed_data)
+            
+            return output_path, validation
         except (ConverterError, FileNotFoundError, InvalidInputError, InvalidFormatError, ReadFileError, WriteFileError, Exception) as e:
             self.logger.error(f"Conversion failed: {str(e)}")
             raise
