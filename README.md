@@ -8,7 +8,7 @@ Python library for converting XLSX files to JSON format with type preservation a
 - ✅ Converts XLSX files to JSON format
 - ✅ Preserves cell data type information from source XLSX
 - ✅ Type consistency validation per column (non-blocking warnings)
-- ✅ Automatic collision avoidance for output filenames
+- ✅ Timestamped output filenames to avoid collisions (e.g. `output-20260318-101533722062.json`)
 - ✅ Usable as CLI tool or importable Python library
 
 ## Installation
@@ -33,8 +33,8 @@ python main.py
 ```
 
 You will be prompted for:
-1. Source XLSX filename (default: `source.xlsx`)
-2. Output JSON filename (default: `output.json`)
+1. Source XLSX filename (default: `source.xlsx` in `sources/` directory)
+2. Output JSON filename (default: auto-generated timestamped name like `output-20260318-101533722062.json`)
 
 ### As Python Library
 
@@ -91,15 +91,20 @@ The generated JSON preserves cell type information:
       "headers": ["Date", "Amount", "Description"],
       "rows": [
         [
-          {"data_type": "d", "value": "2026-01-15"},
-          {"data_type": "n", "value": 150.50},
-          {"data_type": "s", "value": "Payment"}
+          {"data_type": "d", "value": "2026-01-15", "conversion_error": false},
+          {"data_type": "n", "value": 150.50, "conversion_error": false},
+          {"data_type": "s", "value": "Payment", "conversion_error": false}
         ]
       ]
     }
   ]
 }
 ```
+
+Cell fields:
+- `data_type`: Original Excel cell type (see below)
+- `value`: Converted cell value (JSON-serializable)
+- `conversion_error`: `true` if conversion failed and value was cast to string as fallback
 
 Cell data types:
 - `'s'` - String
