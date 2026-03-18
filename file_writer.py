@@ -5,27 +5,29 @@ Handles:
 - Output filename validation
 - JSON extension management
 - Output directory creation
-- Collision avoidance (output.json → output(2).json → output(3).json)
+- Timestamp-based filename generation (output-YYYYMMDD-HHMM.json)
 - File writing with error handling
 """
 
 from pathlib import Path
+from datetime import datetime, time
 
-from constants import DEFAULT_OUTPUT_DIR, DEFAULT_OUTPUT_FILENAME, JSON_EXTENSION
+from constants import DEFAULT_OUTPUT_DIR, DEFAULT_OUTPUT_FILENAME_START, JSON_EXTENSION
 from exceptions import WriteFileError, InvalidInputError
 
 
 def write(content: str, filename: str = "") -> Path:
     """
-    Write JSON content to output file. If no filename provided, uses default output filename.
-    If using default filename, ensures no existing files are overwritten.
+    Write JSON content to output file. If no filename provided, generates a timestamped default filename.
+    
+    Default filename format: output-YYYYMMDD-HHMM.json (e.g., output-20260318-1007.json)
     
     WARNING: if providing a custom filename, it will be used as-is (with .json extension auto-appended if missing)
     and will overwrite existing files without warning.
     
     Args:
         content: JSON string to write
-        filename: Output filename (no path allowed)
+        filename: Output filename (no path allowed), or empty for timestamped default
         
     Returns:
         Path to the written file
@@ -54,11 +56,17 @@ def write(content: str, filename: str = "") -> Path:
 
 def _get_valid_path(filename: str) -> Path:
     """
-    Returns a path to a valid output file. Ensures no path separators, appends .json if missing, and resolves to a safe filename in the output directory.
+    Returns a path to a valid output file. 
+    
+    If no filename provided, generates a timestamped default filename.
+    If filename provided, ensures no path separators and appends .json if missing.
+    
     Args:
-        filename: Desired output filename (no path) 
+        filename: Desired output filename (no path allowed), or empty for default
+        
     Returns:    
-        Path to a valid output file (guaranteed not to overwrite existing files if using default name)
+        Path to a valid output file in DEFAULT_OUTPUT_DIR
+        
     Raises:
         InvalidInputError: If filename contains path separators
     """
@@ -73,27 +81,28 @@ def _get_valid_path(filename: str) -> Path:
 
 def _generate_default_filename() -> str:
     """
-    Find a safe default filename that doesn't collide with existing files.
+    Generate a timestamped default filename.
     
-    If output.json exists, tries output(2).json, output(3).json, etc.
+    Generates filename with current date and time in format:
+    {DEFAULT_OUTPUT_FILENAME_START}-YYYYMMDD-HHMM.json
+    
+    Example: output-20260318-1007.json (March 18, 2026 at 10:07 AM)
+    
+    Uses leading zeros to ensure consistent length:
+    - YYYY: 4 digits (year)
+    - MM: 2 digits (month, 01-12)
+    - DD: 2 digits (day, 01-31)
+    - HH: 2 digits (hour, 00-23)
+    - MM: 2 digits (minute, 00-59)
+    - SS: 2 digits (second, 00-59)
+    - fff: 6 digits (microsecond, 000000-999999)
     
     Args:
         None
         
     Returns:
-        str: Filename guaranteed not to exist
+        str: Filename with timestamp, guaranteed to be unique per microsecond
     """
-    
-    # Checking if default output file already exists
-    if not (DEFAULT_OUTPUT_DIR / DEFAULT_OUTPUT_FILENAME).exists():
-        filename = DEFAULT_OUTPUT_FILENAME
-    # If it exists, we need to find a new name by appending (n) before the extension
-    else: 
-        base_name = DEFAULT_OUTPUT_FILENAME[:-len(JSON_EXTENSION)]
-        n = 2
-        filename = (base_name + JSON_EXTENSION)
-        while (DEFAULT_OUTPUT_DIR / filename).exists():
-            n += 1
-            filename = f"{base_name}({n}){JSON_EXTENSION}"
-    
-    return filename
+    now = datetime.now()
+    date_with_time = now.strftime("%Y%m%d-%H%M%S%f")
+    return f"{DEFAULT_OUTPUT_FILENAME_START}-{date_with_time}{JSON_EXTENSION}"

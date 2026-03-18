@@ -10,8 +10,7 @@ import logging
 from pathlib import Path
 
 from converter import Converter
-from constants import DEFAULT_SOURCE_FILENAME, DEFAULT_OUTPUT_FILENAME, DEFAULT_SOURCE_DIR, DEFAULT_OUTPUT_DIR
-
+from constants import DEFAULT_SOURCE_FILENAME, DEFAULT_OUTPUT_FILENAME_START, DEFAULT_SOURCE_DIR, DEFAULT_OUTPUT_DIR, JSON_EXTENSION
 logger = logging.getLogger(__name__)
 
 
@@ -32,7 +31,7 @@ def prompt_user() -> tuple[str, str]:
     print(f"\nDefault values:")
     print(f"  Default source directory: {DEFAULT_SOURCE_DIR}")
     print(f"  Default source file: {DEFAULT_SOURCE_DIR}/{DEFAULT_SOURCE_FILENAME}")
-    print(f"  Default output file: {DEFAULT_OUTPUT_DIR}/{DEFAULT_OUTPUT_FILENAME}\n")
+    print(f"  Default output file: {DEFAULT_OUTPUT_DIR}/{DEFAULT_OUTPUT_FILENAME_START}/{JSON_EXTENSION}\n")
     print(f"All output files will be created in the {DEFAULT_OUTPUT_DIR} directory")
     
     # Get input filename
@@ -41,7 +40,7 @@ def prompt_user() -> tuple[str, str]:
     input_file = input_file
     
     # Get output filename
-    output_prompt = f"Enter output filename [Leave it blank for {DEFAULT_OUTPUT_FILENAME}]: "
+    output_prompt = f"Enter output filename: "
     output_file = input(output_prompt).strip()
     output_file = output_file
     
@@ -78,8 +77,8 @@ def main() -> None:
     Interactive CLI for XLSX to JSON converter.
     
     Prompts user for:
-    - Source XLSX filename (default: source.xlsx)
-    - Output JSON filename (default: output.json)
+    - Source XLSX filename (default: source.xlsx in sources/ directory)
+    - Output JSON filename (default: auto-generated timestamp, e.g. output-20260318-101533722062.json)
     
     Displays conversion result and any type validation warnings.
     Handles all errors gracefully with informative messages.

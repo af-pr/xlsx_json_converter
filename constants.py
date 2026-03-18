@@ -8,7 +8,7 @@ from pathlib import Path
 DEFAULT_SOURCE_DIR = Path("sources")
 DEFAULT_SOURCE_FILENAME = "source.xlsx"
 DEFAULT_OUTPUT_DIR = Path("output")
-DEFAULT_OUTPUT_FILENAME = "output.json" # TODO: review if this is correct. If there is already an output.json we should create output(<n>).json. Maybe we can use 'output' and JSON_EXTENSION
+DEFAULT_OUTPUT_FILENAME_START = "output"
 
 # File extensions
 XLSX_EXTENSION = ".xlsx"

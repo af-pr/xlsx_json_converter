@@ -39,8 +39,8 @@ class Converter:
         Type validation is non-blocking and warnings are available separately.
         
         Args:
-            input_filename: XLSX filename (empty = default)
-            output_filename: Output JSON filename (empty = default)
+            input_filename: XLSX filename to read from sources/ directory, or full path (empty = default: sources/source.xlsx)
+            output_filename: Output JSON filename (empty = auto-generated timestamp, e.g. output-20260318-101533722062.json)
             
         Returns:
             Path to the created JSON file
