@@ -91,8 +91,8 @@ def _generate_default_filename() -> str:
     else: 
         base_name = DEFAULT_OUTPUT_FILENAME[:-len(JSON_EXTENSION)]
         n = 2
-        filename = DEFAULT_OUTPUT_DIR / (base_name + JSON_EXTENSION)
-        while filename.exists():
+        filename = (base_name + JSON_EXTENSION)
+        while (DEFAULT_OUTPUT_DIR / filename).exists():
             n += 1
             filename = f"{base_name}({n}){JSON_EXTENSION}"
     
