@@ -19,14 +19,14 @@ def print_header():
     print("XLSX to JSON Converter")
     print("=" * 30)
 
-def prompt_user() -> tuple[str, str]:
+def prompt_user() -> tuple[str, str, str]:
     """
-    Prompt user for input and output filenames.
+    Prompt user for input filename, output filename, and conversion mode.
     
     Uses default values if user presses Enter without input.
     
     Returns:
-        Tuple of (input_filename, output_filename)
+        Tuple of (input_filename, output_filename, conversion_mode)
     """
     print(f"\nDefault values:")
     print(f"  Default source directory: {DEFAULT_SOURCE_DIR}")
@@ -44,7 +44,23 @@ def prompt_user() -> tuple[str, str]:
     output_file = input(output_prompt).strip()
     output_file = output_file
     
-    return input_file, output_file
+    # Get conversion mode
+    print("\nConversion modes:")
+    print("  'table': Nested structure with headers, rows, and metadata")
+    print("  'object': Flat object structure (each row as an object)")
+    mode_prompt = "Enter conversion mode [table(t)/object(o)] [default: table]: "
+    conversion_mode = input(mode_prompt).strip().lower() or "table"
+    
+    # Validate conversion mode
+    if conversion_mode not in ('table', 'object', 't', 'o'):
+        print(f"Invalid mode '{conversion_mode}'. Using 'table' as default.")
+        conversion_mode = "table"
+    elif conversion_mode == 't':
+        conversion_mode = 'table'
+    elif conversion_mode == 'o':
+        conversion_mode = 'object'
+    
+    return input_file, output_file, conversion_mode
 
 def display_results(output_path: Path) -> None:
     """
@@ -96,7 +112,8 @@ def main() -> None:
     
     Prompts user for:
     - Source XLSX filename (default: source.xlsx in sources/ directory)
-    - Output JSON filename (default: auto-generated timestamp, e.g. output-20260318-101533722062.json)
+    - Output JSON filename (default: auto-generated timestamp)
+    - Conversion mode ("table" or "object", also "t" and "o" shortcuts, default: "table")
     
     Displays conversion result and any type validation warnings.
     Handles all errors gracefully with informative messages.
@@ -105,10 +122,10 @@ def main() -> None:
     print_header()
     
     try:
-        input_file, output_file = prompt_user()
+        input_file, output_file, conversion_mode = prompt_user()
         
         converter = Converter()
-        output_path, validation_results = converter.convert(input_file, output_file)
+        output_path, validation_results = converter.convert(input_file, output_file, conversion_mode)
         
         display_results(output_path)
         display_validation_results(validation_results)

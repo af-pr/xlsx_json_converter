@@ -10,12 +10,11 @@ converting to string in case of error to preserve the data.
 from typing import List, Dict, Any
 import json
 import logging
-from datetime import datetime, date
-from decimal import Decimal
 
 from models import SheetData, Cell
 from exceptions import ConverterError
 from constants import JSON_INDENT, JSON_ENSURE_ASCII
+from cell_converter import convert_cell_value
 
 logger = logging.getLogger(__name__)
 
@@ -80,18 +79,8 @@ def _serialize_cell(cell: Cell) -> Dict[str, Any]:
     """
     Serialize cell to dictionary with value, metadata, and conversion error flag.
     
-    Converts openpyxl value types to JSON-serializable format using the cell's
-    data_type as discriminator. Returns None for empty cells. If conversion fails,
-    logs a warning and returns the value as string while setting conversion_error=True.
-    
-    Supported data_types:
-    - 's' (string): Converted to str
-    - 'n' (number): Decimal converted to float, others as-is
-    - 'd' (date): datetime/date converted to ISO format string
-    - 'b' (boolean): Kept as-is (bool type)
-    - 'f' (formula): Converted to str
-    - 'e' (error): Converted to str
-    - None (empty): value is None
+    Uses the common cell_converter.convert_cell_value() function for value conversion
+    and adds Table mode specific metadata (data_type and conversion_error).
     
     Args:
         cell: Cell object with data_type and value from openpyxl
@@ -102,33 +91,9 @@ def _serialize_cell(cell: Cell) -> Dict[str, Any]:
         - value: Converted value (str, int, float, bool, None)
         - conversion_error: Boolean flag indicating if conversion failed
     """
-    if cell.data_type is None:
-        return {"data_type": None, "value": None, "conversion_error": False}
-    
     try:
-        # Boolean type
-        if cell.data_type == 'b':
-            serialized_value = bool(cell.value)
-
-        # Number type - convert Decimal to float
-        elif cell.data_type == 'n':
-            serialized_value = float(cell.value) if isinstance(cell.value, Decimal) else cell.value
-        
-        # Formula, string and error type - convert to string
-        elif cell.data_type in ('f', 'e', 's'):
-            serialized_value = str(cell.value) if cell.value is not None else None
-        
-        # Date type - convert datetime/date to ISO format
-        elif cell.data_type == 'd':
-            serialized_value = cell.value.isoformat() if isinstance(cell.value, (datetime, date)) else str(cell.value) if cell.value is not None else None
-        
-        # Unknown data_type - log warning and convert to string
-        else:
-            logger.warning(f"Unknown data_type '{cell.data_type}' for value {cell.value}, converting to string")
-            serialized_value = str(cell.value) if cell.value is not None else None
-
-        return {"data_type": cell.data_type,"value": serialized_value, "conversion_error": False}
-    
+        value = convert_cell_value(cell)
+        return {"data_type": cell.data_type, "value": value, "conversion_error": False}
     except Exception as e:
         # If conversion fails, log warning and return value as string to preserve information
         logger.warning(f"Error converting cell with data_type '{cell.data_type}' and value {cell.value}: {str(e)}. Returning as string.")

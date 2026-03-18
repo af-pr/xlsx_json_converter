@@ -5,8 +5,10 @@ Python library for converting XLSX files to JSON format with type preservation a
 
 ## Features
 
-- ✅ Converts XLSX files to JSON format
-- ✅ Preserves cell data type information from source XLSX
+- ✅ Converts XLSX files to JSON format with **dual conversion modes**
+- ✅ **Table Mode**: Nested structure with headers, rows, and type metadata
+- ✅ **Object Mode**: Flat object structures where each row maps to an object with headers as keys
+- ✅ Preserves cell data type information from source XLSX (Table mode only)
 - ✅ Type consistency validation per column (non-blocking warnings)
 - ✅ Timestamped output filenames to avoid collisions (e.g. `output-20260318-101533722062.json`)
 - ✅ Usable as CLI tool or importable Python library
@@ -35,8 +37,24 @@ python main.py
 The CLI will:
 1. Prompt for source XLSX filename (default: `source.xlsx` in `sources/` directory)
 2. Prompt for output JSON filename (default: auto-generated timestamp like `output-20260318-101533722062.json`)
-3. Perform conversion and display results
-4. **Automatically validate type consistency** across columns and display any warnings
+3. Prompt for conversion mode: `table` or `object` (default: `table`)
+4. Perform conversion and display results
+5. **Automatically validate type consistency** across columns and display any warnings
+
+Example conversion mode selection:
+```
+Enter source filename: source.xlsx
+Enter output filename: 
+Conversion modes:
+  'table': Nested structure with headers, rows, and metadata
+  'object': Flat object structure (each row as an object)
+Enter conversion mode [table(t)/object(o)] [default: table]: object
+
+✅ Conversion successful!
+
+Output file created:
+  output/output-20260318-101533722062.json
+```
 
 Example output with type inconsistencies:
 ```
@@ -61,9 +79,12 @@ Output file created:
 ```python
 from converter import Converter
 
-# Create converter and convert file
+# Create converter and convert file with table or object mode
 converter = Converter()
-output_path, validation_results = converter.convert(source, output_filename)
+output_path, validation_results = converter.convert("source.xlsx", "output", "table")
+
+# Or use Object mode
+output_path, validation_results = converter.convert("source.xlsx", "output.json", "object")
 
 # Check validation results
 for result in validation_results:
@@ -77,17 +98,19 @@ for result in validation_results:
 
 ```
 xlsx_json_converter/
-├── main.py                  # CLI entry point
-├── converter.py             # Main orchestrator class
-├── file_reader.py           # XLSX file reading
-├── xlsx_parser.py           # XLSX parsing to SheetData
-├── json_converter.py        # Serialization to JSON
-├── data_validator.py        # Type consistency validation
-├── file_writer.py           # JSON file writing
-├── models.py                # Data structures (Cell, SheetData)
-├── exceptions.py            # Custom exceptions
-├── constants.py             # Configuration constants
-└── __init__.py              # Package initialization
+├── main.py                      # CLI entry point
+├── converter.py                 # Main orchestrator class
+├── file_reader.py               # XLSX file reading
+├── xlsx_parser.py               # XLSX parsing to SheetData
+├── json_table_converter.py      # Table mode: JSON with type metadata
+├── json_object_converter.py     # Object mode: Flat object structures
+├── data_validator.py            # Type consistency validation
+├── file_writer.py               # JSON file writing
+├── models.py                    # Data structures (Cell, SheetData)
+├── exceptions.py                # Custom exceptions
+├── constants.py                 # Configuration constants
+├── requirements.txt             # Pip dependencies
+└── README.md                    # This file
 ```
 
 ## Input Format Requirements
@@ -99,12 +122,34 @@ The XLSX file must follow this structure:
   - If the entire first row is empty, all headers will be auto-generated
   - WARNING! If the first row is data it will still be processed as headers
 - **Rows 2 onwards**: Actual data
+
+### Header Names for Object Mode
+
+When using **Object mode**, headers are automatically transformed into object attribute names. The transformation rules are:
+
+1. **Remove non-alphanumeric characters**: All characters except letters, numbers, and the Unicode character class are removed
+   - Example: `"User-ID"` → `"UserID"`
+
+2. **Convert to camelCase**: 
+   - First word: all lowercase
+   - Subsequent words: first letter uppercase, rest lowercase
+   - Multiple spaces/underscores/hyphens are treated as word separators
+   - Example: `"First Name"` → `"firstName"`
+
+3. **Header uniqueness requirement**: After transformation, all headers must be **unique**. If transformation results in duplicate attribute names, the conversion will fail with an error.
+   - Example that FAILS: Headers `"firstName"` and `"First-Name"` both transform to `"firstName"` → Error!
+   - Example that FAILS: Headers `"first name"` and `"First Name"` both transform to `"firstName"` → Error!
 ```
 
-## Output Format
+## Output Formats
 
-The generated JSON preserves cell type information:
+The converter supports two output formats depending on the chosen conversion mode:
 
+### Table Mode (Default)
+
+Table mode is optimized for preserving all type information and metadata. Each cell includes type and conversion error information.
+
+**Structure:**
 ```json
 {
   "sheets": [
@@ -116,6 +161,11 @@ The generated JSON preserves cell type information:
           {"data_type": "d", "value": "2026-01-15", "conversion_error": false},
           {"data_type": "n", "value": 150.50, "conversion_error": false},
           {"data_type": "s", "value": "Payment", "conversion_error": false}
+        ],
+        [
+          {"data_type": "d", "value": "2026-01-16", "conversion_error": false},
+          {"data_type": "n", "value": 250.00, "conversion_error": false},
+          {"data_type": "s", "value": "Refund", "conversion_error": false}
         ]
       ]
     }
@@ -123,12 +173,49 @@ The generated JSON preserves cell type information:
 }
 ```
 
-Cell fields:
-- `data_type`: Original Excel cell type (see below)
+**Cell fields:**
+- `data_type`: Original Excel cell type (see table below)
 - `value`: Converted cell value (JSON-serializable)
 - `conversion_error`: `true` if conversion failed and value was cast to string as fallback
 
-Cell data types:
+### Object Mode
+
+Object mode is optimized for object-oriented consumption. Each row becomes a flat object with headers as keys. Empty cells are represented as `null`.
+
+**Structure:**
+```json
+[
+  {
+    "sheet": "Sheet1",
+    "content": [
+      {
+        "date": "2026-01-15",
+        "amount": 150.50,
+        "description": "Payment"
+      },
+      {
+        "date": "2026-01-16",
+        "amount": 250.00,
+        "description": "Refund"
+      }
+    ]
+  }
+]
+```
+
+**Features:**
+- Headers are automatically transformed:
+  - Non-alphanumeric characters removed
+  - Converted to camelCase (first letter lowercase)
+  - Example: `"First Name"` → `"firstName"`, `"User-ID"` → `"userId"`
+- Only values are included (no type metadata)
+- Empty cells are represented as `null`
+- Exception thrown if header transformation results in duplicate names
+
+### Cell Data Types
+
+Both modes support and preserve these Excel cell types:
+
 - `'s'` - String
 - `'n'` - Number
 - `'d'` - Date
