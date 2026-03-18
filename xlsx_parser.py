@@ -5,7 +5,7 @@ XLSX parsing module for converting binary data to structured data.
 from typing import List
 from io import BytesIO
 from openpyxl import load_workbook
-from openpyxl.worksheet import Worksheet
+from openpyxl.worksheet.worksheet import Worksheet
 
 from models import SheetData, Cell
 from exceptions import InvalidFormatError
