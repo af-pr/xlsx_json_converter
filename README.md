@@ -77,14 +77,15 @@ Output file created:
 ### As Python Library
 
 ```python
-from converter import Converter
+from conversion_manager import ConversionManager
+from json_converter import ConversionMode
 
-# Create converter and convert file with table or object mode
-converter = Converter()
-output_path, validation_results = converter.convert("source.xlsx", "output", "table")
+# Create manager and convert file
+manager = ConversionManager()
+output_path, validation_results = manager.convert(ConversionMode.TABLE, "source.xlsx", "output")
 
 # Or use Object mode
-output_path, validation_results = converter.convert("source.xlsx", "output.json", "object")
+output_path, validation_results = manager.convert(ConversionMode.OBJECT, "source.xlsx", "output.json")
 
 # Check validation results
 for result in validation_results:
@@ -99,11 +100,13 @@ for result in validation_results:
 ```
 xlsx_json_converter/
 ├── main.py                      # CLI entry point
-├── converter.py                 # Main orchestrator class
+├── conversion_manager.py        # Main orchestrator class
 ├── file_reader.py               # XLSX file reading
 ├── xlsx_parser.py               # XLSX parsing to SheetData
-├── json_table_converter.py      # Table mode: JSON with type metadata
-├── json_object_converter.py     # Object mode: Flat object structures
+├── json_converter.py            # Parent class for JSON converters
+├── json_table_converter.py      # Table mode converter: JSON with type metadata
+├── json_object_converter.py     # Object mode converter: Flat object structures
+├── cell_converter.py            # Cell value conversion utilities
 ├── data_validator.py            # Type consistency validation
 ├── file_writer.py               # JSON file writing
 ├── models.py                    # Data structures (Cell, SheetData)
@@ -231,7 +234,7 @@ The converter automatically performs **type consistency validation** on all colu
 ### How it Works
 
 - **Per-column analysis**: Each column is analyzed to detect if all non-empty cells have the same data type
-- **Empty cells**: Validation ignores empty cells to avoid false possitives
+- **Empty cells**: Validation ignores empty cells to avoid false positives
 - **Non-blocking**: Validation warnings are displayed but do not stop the conversion
 - **Detailed reporting**: Shows which rows have mismatched types and what types were found
 
