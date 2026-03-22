@@ -73,7 +73,7 @@ def _get_valid_path(filename: str) -> Path:
     if not filename:
         filename = _generate_default_filename()
     elif "/" in filename or "\\" in filename:
-        raise InvalidInputError(f"Ouput filename contains path separators: {filename}") 
+        raise InvalidInputError(f"Output filename contains path separators: {filename}") 
     elif not filename.lower().endswith(JSON_EXTENSION):
         filename += JSON_EXTENSION
     return DEFAULT_OUTPUT_DIR / filename

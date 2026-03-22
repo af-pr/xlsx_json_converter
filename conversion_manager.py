@@ -87,6 +87,6 @@ class ConversionManager:
             validation = data_validator.validate_sheet_data(parsed_data)
 
             return output_path, validation
-        except (ConverterError, FileNotFoundError, InvalidInputError, InvalidFormatError, ReadFileError, WriteFileError, Exception) as e:
+        except Exception as e:
             self.logger.error(f"Conversion failed: {str(e)}")
             raise
