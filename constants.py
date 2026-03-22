@@ -22,16 +22,10 @@ JSON_EXTENSION = ".json"
 JSON_INDENT = 2
 JSON_ENSURE_ASCII = False
 
-# Error messages
-MSG_FILE_NOT_FOUND = "File not found: {}"
-MSG_INVALID_FORMAT = "Invalid XLSX format: {}"
-MSG_INVALID_INPUT = "Invalid input: {}"
-MSG_FILE_EXISTS = "Output file already exists: {}"
-
 # XLSX Parser configuration
 HEADER_ROW_INDEX = 1
 DATA_START_ROW = 2
-AUTO_HEADER_PREFIX = "Column"
+AUTO_HEADER_PREFIX = "Column_"
 
 
 class JsonTableKeys(Enum):
