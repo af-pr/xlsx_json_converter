@@ -6,14 +6,12 @@ with headers as keys. Empty cells are represented as null values.
 """
 
 from typing import List, Any
-import json
 import logging
 import re
 
 from models import SheetData, Cell
 from json_converter import JsonConverter
 from exceptions import ConverterError
-from constants import JSON_INDENT, JSON_ENSURE_ASCII
 from cell_converter import convert_cell_value
 
 logger = logging.getLogger(__name__)
@@ -27,9 +25,9 @@ class ObjectJsonStrategy(JsonConverter):
     Empty cells are represented as null.
     """
 
-    def convert(self, sheet_data_list: List[SheetData]) -> str:
+    def _format_data(self, sheet_data_list: List[SheetData]) -> List[dict]:
         """
-        Convert SheetData objects to object-oriented JSON format.
+        Format SheetData objects to object-oriented data structure.
 
         Each sheet becomes an object with "sheet" name and "content" array where
         each row is a flat object with headers as keys. Headers are transformed
@@ -40,42 +38,33 @@ class ObjectJsonStrategy(JsonConverter):
             sheet_data_list: List of SheetData objects to convert
 
         Returns:
-            Formatted JSON string with structure:
+            List of dicts with structure:
             [{"sheet": "SheetName", "content": [{"header1": value, ...}, ...]}, ...]
 
         Raises:
-            ConverterError: If header collision detected or JSON serialization fails
+            ConverterError: If header collision detected or processing fails
         """
-        try:
-            result = []
+        result = []
 
-            for sheet in sheet_data_list:
-                transformed_headers = [self._transform_header(header) for header in sheet.headers]
-                if len(transformed_headers) != len(set(transformed_headers)):
-                    duplicates = [h for h in transformed_headers if transformed_headers.count(h) > 1]
-                    raise ConverterError(f"Header collision in sheet '{sheet.name}': {set(duplicates)}")
+        for sheet in sheet_data_list:
+            transformed_headers = [self._transform_header(header) for header in sheet.headers]
+            if len(transformed_headers) != len(set(transformed_headers)):
+                duplicates = [h for h in transformed_headers if transformed_headers.count(h) > 1]
+                raise ConverterError(f"Header collision in sheet '{sheet.name}': {set(duplicates)}")
 
-                sheet_content = []
-                for row in sheet.rows:
-                    row_obj = {}
-                    for header, cell in zip(transformed_headers, row):
-                        row_obj[header] = convert_cell_value(cell)
-                    sheet_content.append(row_obj)
+            sheet_content = []
+            for row in sheet.rows:
+                row_obj = {}
+                for header, cell in zip(transformed_headers, row):
+                    row_obj[header] = convert_cell_value(cell)
+                sheet_content.append(row_obj)
 
-                result.append({
-                    "sheet": sheet.name,
-                    "content": sheet_content
-                })
+            result.append({
+                "sheet": sheet.name,
+                "content": sheet_content
+            })
 
-            return json.dumps(
-                result,
-                indent=JSON_INDENT,
-                ensure_ascii=JSON_ENSURE_ASCII
-            )
-        except ConverterError:
-            raise
-        except Exception as e:
-            raise ConverterError(f"Object conversion error: {str(e)}")
+        return result
 
 
     @staticmethod

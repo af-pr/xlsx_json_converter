@@ -6,13 +6,11 @@ cell metadata (data type and conversion error flags).
 """
 
 from typing import List, Dict, Any
-import json
 import logging
 
 from models import SheetData, Cell
 from json_converter import JsonConverter
 from exceptions import ConverterError
-from constants import JSON_INDENT, JSON_ENSURE_ASCII
 from cell_converter import convert_cell_value
 
 logger = logging.getLogger(__name__)
@@ -26,9 +24,9 @@ class TableJsonStrategy(JsonConverter):
     (data_type and conversion_error flag).
     """
 
-    def convert(self, sheet_data_list: List[SheetData]) -> str:
+    def _format_data(self, sheet_data_list: List[SheetData]) -> Dict[str, Any]:
         """
-        Convert SheetData objects to table-format JSON string.
+        Format SheetData objects to table-format data structure.
 
         Each cell is serialized with metadata including its DataType value
         and a conversion error flag.
@@ -37,38 +35,29 @@ class TableJsonStrategy(JsonConverter):
             sheet_data_list: List of SheetData objects to convert
 
         Returns:
-            Formatted JSON string with structure:
+            Dict with structure:
             {"sheets": [{"name": str, "headers": List[str], "rows": List[List[Dict]]}]}
             where each Dict contains: data_type, value, conversion_error
 
         Raises:
-            ConverterError: If JSON serialization or processing fails
+            ConverterError: If processing fails
         """
-        try:
-            sheets_dict = []
-            for sheet in sheet_data_list:
-                serialized_rows = []
-                for row in sheet.rows:
-                    serialized_cells = []
-                    for cell in row:
-                        serialized_cells.append(self._serialize_cell(cell))
-                    serialized_rows.append(serialized_cells)
+        sheets_dict = []
+        for sheet in sheet_data_list:
+            serialized_rows = []
+            for row in sheet.rows:
+                serialized_cells = []
+                for cell in row:
+                    serialized_cells.append(self._serialize_cell(cell))
+                serialized_rows.append(serialized_cells)
 
-                sheets_dict.append({
-                    "name": sheet.name,
-                    "headers": sheet.headers,
-                    "rows": serialized_rows
-                })
+            sheets_dict.append({
+                "name": sheet.name,
+                "headers": sheet.headers,
+                "rows": serialized_rows
+            })
 
-            data = {"sheets": sheets_dict}
-
-            return json.dumps(
-                data,
-                indent=JSON_INDENT,
-                ensure_ascii=JSON_ENSURE_ASCII
-            )
-        except Exception as e:
-            raise ConverterError(f"JSON conversion error: {str(e)}")
+        return {"sheets": sheets_dict}
 
 
     @staticmethod
