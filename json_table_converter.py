@@ -11,6 +11,7 @@ import logging
 from models import SheetData, Cell
 from json_converter import JsonConverter
 from exceptions import ConverterError
+from constants import JsonTableKeys
 from cell_converter import convert_cell_value
 
 logger = logging.getLogger(__name__)
@@ -52,12 +53,12 @@ class TableJsonStrategy(JsonConverter):
                 serialized_rows.append(serialized_cells)
 
             sheets_dict.append({
-                "name": sheet.name,
-                "headers": sheet.headers,
-                "rows": serialized_rows
+                JsonTableKeys.NAME.value: sheet.name,
+                JsonTableKeys.HEADERS.value: sheet.headers,
+                JsonTableKeys.ROWS.value: serialized_rows
             })
 
-        return {"sheets": sheets_dict}
+        return {JsonTableKeys.SHEETS.value: sheets_dict}
 
 
     @staticmethod
@@ -79,7 +80,15 @@ class TableJsonStrategy(JsonConverter):
         """
         try:
             value = convert_cell_value(cell)
-            return {"data_type": cell.data_type.value if cell.data_type else None, "value": value, "conversion_error": False}
+            return {
+                JsonTableKeys.DATA_TYPE.value: cell.data_type.value if cell.data_type else None,
+                JsonTableKeys.VALUE.value: value,
+                JsonTableKeys.CONVERSION_ERROR.value: False
+            }
         except Exception as e:
             logger.warning(f"Error converting cell with data_type '{cell.data_type.name if cell.data_type else None}' and value {cell.value}: {str(e)}. Returning as string.")
-            return {"data_type": cell.data_type.value if cell.data_type else None, "value": str(cell.value) if cell.value is not None else None, "conversion_error": True}
+            return {
+                JsonTableKeys.DATA_TYPE.value: cell.data_type.value if cell.data_type else None,
+                JsonTableKeys.VALUE.value: str(cell.value) if cell.value is not None else None,
+                JsonTableKeys.CONVERSION_ERROR.value: True
+            }

@@ -3,6 +3,7 @@ Constants and default configuration for the XLSX to JSON converter.
 """
 
 from pathlib import Path
+from enum import Enum
 
 # Project root directory
 PROJECT_ROOT = Path(__file__).parent
@@ -26,3 +27,25 @@ MSG_FILE_NOT_FOUND = "File not found: {}"
 MSG_INVALID_FORMAT = "Invalid XLSX format: {}"
 MSG_INVALID_INPUT = "Invalid input: {}"
 MSG_FILE_EXISTS = "Output file already exists: {}"
+
+# XLSX Parser configuration
+HEADER_ROW_INDEX = 1
+DATA_START_ROW = 2
+AUTO_HEADER_PREFIX = "Column"
+
+
+class JsonTableKeys(Enum):
+    """JSON output keys for table-format conversion."""
+    SHEETS = "sheets"
+    NAME = "name"
+    HEADERS = "headers"
+    ROWS = "rows"
+    DATA_TYPE = "data_type"
+    VALUE = "value"
+    CONVERSION_ERROR = "conversion_error"
+
+
+class JsonObjectKeys(Enum):
+    """JSON output keys for object-format conversion."""
+    SHEET = "sheet"
+    CONTENT = "content"

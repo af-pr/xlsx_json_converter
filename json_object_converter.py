@@ -12,6 +12,7 @@ import re
 from models import SheetData, Cell
 from json_converter import JsonConverter
 from exceptions import ConverterError
+from constants import JsonObjectKeys
 from cell_converter import convert_cell_value
 
 logger = logging.getLogger(__name__)
@@ -60,8 +61,8 @@ class ObjectJsonStrategy(JsonConverter):
                 sheet_content.append(row_obj)
 
             result.append({
-                "sheet": sheet.name,
-                "content": sheet_content
+                JsonObjectKeys.SHEET.value: sheet.name,
+                JsonObjectKeys.CONTENT.value: sheet_content
             })
 
         return result
