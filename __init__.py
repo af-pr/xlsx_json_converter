@@ -17,10 +17,10 @@ Input Format:
 
 Can be used as a CLI tool or imported as a library:
 
-    from xlsx_json_converter import Converter, json_validator
+    from xlsx_json_converter import ConversionManager, data_validator
     
-    converter = Converter()
-    output_path = converter.convert("data.xlsx", "output.json")
+    manager = ConversionManager()
+    output_path = manager.convert(ConversionMode.TABLE, "data.xlsx", "output.json")
     
     # Get type validation warnings if needed
     warnings = json_validator.validate_sheet_data(sheet_data)
@@ -31,7 +31,7 @@ Or run as CLI:
     python main.py
 """
 
-from converter import Converter
+from conversion_manager import ConversionManager
 from exceptions import (
     ConverterError,
     FileNotFoundError,

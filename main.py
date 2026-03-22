@@ -9,7 +9,8 @@ import sys
 import logging
 from pathlib import Path
 
-from converter import Converter
+from conversion_manager import ConversionManager
+from json_converter import ConversionMode
 from constants import DEFAULT_SOURCE_FILENAME, DEFAULT_OUTPUT_FILENAME_START, DEFAULT_SOURCE_DIR, DEFAULT_OUTPUT_DIR, JSON_EXTENSION
 logger = logging.getLogger(__name__)
 
@@ -123,9 +124,9 @@ def main() -> None:
     
     try:
         input_file, output_file, conversion_mode = prompt_user()
-        
-        converter = Converter()
-        output_path, validation_results = converter.convert(input_file, output_file, conversion_mode)
+
+        manager = ConversionManager()
+        output_path, validation_results = manager.convert(ConversionMode(conversion_mode), input_file, output_file)
         
         display_results(output_path)
         display_validation_results(validation_results)
