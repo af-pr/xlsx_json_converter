@@ -117,7 +117,6 @@ def main() -> None:
     - Conversion mode ("table" or "object", also "t" and "o" shortcuts, default: "table")
     
     Displays conversion result and any type validation warnings.
-    Handles all errors gracefully with informative messages.
     """
     
     print_header()
