@@ -12,6 +12,7 @@ from pathlib import Path
 from conversion_manager import ConversionManager
 from json_converter import ConversionMode
 from constants import DEFAULT_SOURCE_FILENAME, DEFAULT_OUTPUT_FILENAME_START, DEFAULT_SOURCE_DIR, DEFAULT_OUTPUT_DIR, JSON_EXTENSION
+from exceptions import ConverterError
 logger = logging.getLogger(__name__)
 
 
@@ -38,12 +39,10 @@ def prompt_user() -> tuple[str, str, str]:
     # Get input filename
     input_prompt = f"Enter source filename: "
     input_file = input(input_prompt).strip()
-    input_file = input_file
     
     # Get output filename
     output_prompt = f"Enter output filename: "
     output_file = input(output_prompt).strip()
-    output_file = output_file
     
     # Get conversion mode
     print("\nConversion modes:")
@@ -134,6 +133,16 @@ def main() -> None:
         print("\n\n⚠️  Conversion interrupted by user")
         logger.info("Conversion interrupted by user")
         sys.exit(130)
+
+    except ConverterError as e:
+        print(f"\n❌ Error: {e}")
+        logger.error(str(e), exc_info=True)
+        sys.exit(1)
+
+    except Exception as e:
+        print(f"\n❌ Unexpected error: {e}")
+        logger.error(str(e), exc_info=True)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
