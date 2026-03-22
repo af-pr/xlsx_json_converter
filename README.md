@@ -17,7 +17,7 @@ Python library for converting XLSX files to JSON format with type preservation a
 
 ### Requirements
 
-- Python 3.8+
+- Python 3.11+
 - openpyxl (for XLSX parsing)
 
 ### Setup

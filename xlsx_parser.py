@@ -7,7 +7,7 @@ from io import BytesIO
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
-from models import SheetData, Cell
+from models import SheetData, Cell, DataType
 from exceptions import InvalidFormatError
 
 
@@ -18,7 +18,8 @@ def parse(file_bytes: bytes) -> List[SheetData]:
     Extracts all sheets from workbook using openpyxl. The first row in each sheet
     is ALWAYS treated as column headers. Empty header cells are auto-generated as
     Column_1, Column_2, etc. Each cell is represented with its original data type
-    preserved (string, number, date, boolean, formula, error).
+    preserved if valid (string, number, date, boolean, formula, error);
+    unrecognized types are cast to string, and empty cells are assigned None type.
     
     Input Format Requirement:
     - First row MUST contain column header names
@@ -85,8 +86,19 @@ def _extract_data(worksheet: Worksheet, num_columns: int) -> List[List[Cell]]:
         cell_list = []
         
         for cell in row:
+            if cell.value is None:
+                cell_type = None
+                cell_val = None
+            else:
+                try:
+                    cell_type = DataType(cell.data_type)
+                    cell_val = cell.value
+                except ValueError:
+                    cell_type = DataType.STRING
+                    cell_val = str(cell.value)
+            
             cell_list.append(
-                Cell(data_type=cell.data_type, value=cell.value)
+                Cell(data_type=cell_type, value=cell_val)
             )
         
         # If current row has fewer cells than num_columns, add empty cells to maintain structure

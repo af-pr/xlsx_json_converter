@@ -7,7 +7,27 @@ ensuring type safety and clear contracts between modules.
 
 from dataclasses import dataclass
 from typing import List, Optional, Any
+from enum import Enum
 
+
+class DataType(Enum):
+    """
+    Enum for supported XLSX cell data types.
+    
+    Values correspond to openpyxl's cell data_type codes:
+    - STRING: 's'
+    - NUMBER: 'n'
+    - DATE: 'd'
+    - BOOLEAN: 'b'
+    - FORMULA: 'f'
+    - ERROR: 'e'
+    """
+    STRING = 's'
+    NUMBER = 'n'
+    DATE = 'd'
+    BOOLEAN = 'b'
+    FORMULA = 'f'
+    ERROR = 'e'
 
 @dataclass
 class Cell:
@@ -15,11 +35,10 @@ class Cell:
     Represents a single cell from an XLSX file.
     
     Attributes:
-        data_type: XLSX cell type code from openpyxl ('s'=string, 'n'=number, 
-                   'd'=date, 'b'=boolean, 'f'=formula, 'e'=error). None for empty cells.
-        value: The raw cell value without type conversion or parsing.
+        data_type: XLSX cell type represented by DataType enum. None for empty cells.
+        value: The cell value (raw by default, but cast to string if its data type is unknown).
     """
-    data_type: Optional[str]
+    data_type: Optional[DataType]
     value: Any
 
 

@@ -23,11 +23,11 @@ def convert_to_json(sheet_data_list: List[SheetData]) -> str:
     """
     Convert SheetData objects to formatted JSON string.
     
-    Processes cell values based on their data_type before serialization:
-    - 's' (string): converted to str
-    - 'n' (number): Decimal converted to float, others as-is
-    - 'd' (date): datetime/date converted to ISO format string
-    - 'b' (boolean): converted to bool
+    Processes cell values based on their DataType before serialization:
+    - DataType.STRING: converted to str
+    - DataType.NUMBER: Decimal converted to float, others as-is
+    - DataType.DATE: datetime/date converted to ISO format string
+    - DataType.BOOLEAN: converted to bool
     - 'f' (formula): converted to str
     - 'e' (error): converted to str
     - None (empty): remains None (becomes null in JSON)
@@ -87,14 +87,14 @@ def _serialize_cell(cell: Cell) -> Dict[str, Any]:
         
     Returns:
         Dict with keys:
-        - data_type: Original data_type from cell (str or None)
+        - data_type: Original data_type value from cell (str or None)
         - value: Converted value (str, int, float, bool, None)
         - conversion_error: Boolean flag indicating if conversion failed
     """
     try:
         value = convert_cell_value(cell)
-        return {"data_type": cell.data_type, "value": value, "conversion_error": False}
+        return {"data_type": cell.data_type.value if cell.data_type else None, "value": value, "conversion_error": False}
     except Exception as e:
         # If conversion fails, log warning and return value as string to preserve information
-        logger.warning(f"Error converting cell with data_type '{cell.data_type}' and value {cell.value}: {str(e)}. Returning as string.")
-        return {"data_type": cell.data_type, "value": str(cell.value) if cell.value is not None else None, "conversion_error": True}
+        logger.warning(f"Error converting cell with data_type '{cell.data_type.name if cell.data_type else None}' and value {cell.value}: {str(e)}. Returning as string.")
+        return {"data_type": cell.data_type.value if cell.data_type else None, "value": str(cell.value) if cell.value is not None else None, "conversion_error": True}

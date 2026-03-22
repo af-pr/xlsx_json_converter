@@ -10,28 +10,28 @@ import logging
 from datetime import datetime, date
 from decimal import Decimal
 
-from models import Cell
+from models import Cell, DataType
 
 logger = logging.getLogger(__name__)
 
 
 def convert_cell_value(cell: Cell) -> Any:
     """
-    Convert cell value to JSON-serializable format based on data_type.
+    Convert cell value to JSON-serializable format based on DataType enum.
     
-    Handles all openpyxl data types:
-    - 's' (string): converted to str
-    - 'n' (number): Decimal converted to float, others as-is
-    - 'd' (date): datetime/date converted to ISO format string
-    - 'b' (boolean): converted to bool
-    - 'f' (formula): converted to str
-    - 'e' (error): converted to str
+    Handles all openpyxl data types mapped to our DataType enum:
+    - DataType.STRING: converted to str
+    - DataType.NUMBER: Decimal converted to float, others as-is
+    - DataType.DATE: datetime/date converted to ISO format string
+    - DataType.BOOLEAN: converted to bool
+    - DataType.FORMULA: converted to str
+    - DataType.ERROR: converted to str
     - None (empty): returns None
     
     If conversion fails, logs warning and returns value as string.
     
     Args:
-        cell: Cell object with data_type and value from openpyxl
+        cell: Cell object with data_type (DataType enum or None) and value from openpyxl
         
     Returns:
         Converted value (str, int, float, bool, None) - JSON serializable
@@ -44,19 +44,19 @@ def convert_cell_value(cell: Cell) -> Any:
     
     try:
         # Boolean type
-        if cell.data_type == 'b':
+        if cell.data_type == DataType.BOOLEAN:
             return bool(cell.value)
         
         # Number type - convert Decimal to float
-        elif cell.data_type == 'n':
+        elif cell.data_type == DataType.NUMBER:
             return float(cell.value) if isinstance(cell.value, Decimal) else cell.value
         
         # Date type - convert to ISO format string
-        elif cell.data_type == 'd':
+        elif cell.data_type == DataType.DATE:
             return cell.value.isoformat() if isinstance(cell.value, (datetime, date)) else str(cell.value)
         
         # String, formula, and error types - convert to string
-        elif cell.data_type in ('s', 'f', 'e'):
+        elif cell.data_type in (DataType.STRING, DataType.FORMULA, DataType.ERROR):
             return str(cell.value)
         
         # Unknown type - convert to string

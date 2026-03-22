@@ -83,8 +83,9 @@ def _validate_column_types(
 
     type_distribution = defaultdict(list)
     for row_index, cell in enumerate(cells):
-        if cell.data_type:
-            type_distribution[cell.data_type].append(row_index)
+        val = cell.data_type.value if getattr(cell.data_type, "value", cell.data_type) else cell.data_type
+        if val:
+            type_distribution[cell.data_type.name if hasattr(cell.data_type, "name") else str(cell.data_type)].append(row_index)
 
     validated = len(type_distribution) <= 1
     return ColumnValidationResult(
