@@ -9,6 +9,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from models import SheetData, Cell, DataType
 from exceptions import InvalidFormatError
+from xlsx_json_converter.constants import AUTO_HEADER_PREFIX, DATA_START_ROW, HEADER_ROW_INDEX
 
 
 def parse(file_bytes: bytes) -> List[SheetData]:
@@ -59,13 +60,13 @@ def _extract_headers(worksheet : Worksheet) -> List[str]:
     Returns:
         List of header names
     """
-    first_row = worksheet[1]  # This is the first row (headers), openpyxl starts indexing at 1
+    first_row = worksheet[HEADER_ROW_INDEX]  # This is the first row (headers), openpyxl starts indexing at 1
     headers = []
     for cell in first_row:
         if cell.value:
             headers.append(str(cell.value))
         else:
-            headers.append(f"Column_{cell.column}")
+            headers.append(f"{AUTO_HEADER_PREFIX}{cell.column}")
     return headers
 
 def _extract_data(worksheet: Worksheet, num_columns: int) -> List[List[Cell]]:
@@ -81,7 +82,7 @@ def _extract_data(worksheet: Worksheet, num_columns: int) -> List[List[Cell]]:
     rows = []
     
     # Iterate from row 2 onwards. If the sheet has fewer columns than 2, the loop won't be executed (empty content case)
-    for row_idx in range(2, worksheet.max_row + 1):
+    for row_idx in range(DATA_START_ROW, worksheet.max_row + 1):
         row = worksheet[row_idx]
         cell_list = []
         
